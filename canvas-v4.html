@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CANVAS — Island Coffee</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue:         #0a7cff;
+  --blue-bright:  #0066ee;
+  --blue-mid:     rgba(10,124,255,0.10);
+  --blue-low:     rgba(10,124,255,0.05);
+  --blue-border:  rgba(10,124,255,0.22);
+  --blue-dark:    #0055cc;
+
+  --bg:           #f5f6f8;
+  --surface:      #ffffff;
+  --surface2:     #f0f1f4;
+  --surface3:     #e8eaee;
+
+  --ink:          #0a0a0f;
+  --ink2:         #4a4a5a;
+  --ink3:         #9a9aaa;
+  --ink4:         #c8c8d4;
+
+  --divide:       rgba(0,0,0,0.07);
+  --divide-strong:rgba(0,0,0,0.12);
+
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:    0 4px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05);
+  --shadow-lg:    0 8px 32px rgba(0,0,0,0.09), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { -webkit-font-smoothing:antialiased; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Barlow', sans-serif;
+  font-weight: 400;
+  min-height: 100vh;
+}
+
+/* ═══ HEADER ═══ */
+header {
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--divide);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: var(--shadow-sm);
+  gap: 14px;
+}
+
+.nb-mark {
+  width: 32px; height: 32px;
+  background: var(--blue);
+  border-radius: 7px;
+  display: grid; place-items: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900; font-size: 10px;
+  letter-spacing: .05em; color: #fff;
+  flex-shrink: 0;
+}
+
+.canvas-word {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800; font-size: 18px;
+  letter-spacing: .2em; color: var(--blue);
+  text-transform: uppercase;
+}
+
+.h-sep { width: 1px; height: 18px; background: var(--divide-strong); }
+
+.h-client-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 13px;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink);
+}
+.h-client-sub {
+  font-size: 9px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--ink3);
+  font-family: 'Barlow Condensed', sans-serif;
+  margin-top: 1px;
+}
+
+.h-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+.h-status { display: flex; align-items: center; gap: 6px; }
+.h-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--blue);
+  animation: blink 2.4s ease infinite;
+}
+@keyframes blink {
+  0%,100%{ opacity:1; } 50%{ opacity:.3; }
+}
+.h-status-txt {
+  font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ink3);
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+.h-pill {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--blue); border: 1px solid var(--blue-border);
+  padding: 4px 11px; border-radius: 20px;
+  background: var(--blue-low);
+  font-family: 'Barlow Condensed', sans-serif;
+}
+
+/* ═══ SCENARIO BAR ═══ */
+.scbar {
+  display: flex; align-items: center;
+  padding: 0 28px; height: 42px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--divide);
+  position: sticky; top: 56px; z-index: 150;
+  gap: 5px;
+}
+
+.sc-label {
+  font-size: 9px; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--ink4);
+  font-family: 'Barlow Condensed', sans-serif;
+  margin-right: 6px; white-space: nowrap;
+}
+
+.stab {
+  padding: 4px 13px; border-radius: 5px;
+  border: 1px solid transparent; background: transparent;
+  color: var(--ink3);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer; transition: all .17s; white-space: nowrap; user-select: none;
+}
+.stab:hover { color: var(--ink); background: var(--surface2); }
+.stab.active {
+  background: var(--blue-mid); border-color: var(--blue-border);
+  color: var(--blue-bright);
+}
+
+.stab-add {
+  padding: 4px 12px; border-radius: 5px;
+  border: 1px dashed var(--ink4); background: transparent;
+  color: var(--ink3);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer; transition: all .17s;
+}
+.stab-add:hover { border-color: var(--blue-border); color: var(--blue); }
+
+.scbar-right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+
+.sc-btn {
+  padding: 5px 13px; border-radius: 6px;
+  border: 1px solid var(--divide-strong); background: var(--surface);
+  color: var(--ink2);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  cursor: pointer; transition: all .15s; box-shadow: var(--shadow-sm);
+}
+.sc-btn:hover { border-color: var(--blue-border); color: var(--blue); }
+
+.sc-run {
+  padding: 5px 18px; border-radius: 6px; border: none;
+  background: var(--blue); color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  cursor: pointer; transition: background .15s, transform .1s;
+  box-shadow: 0 2px 8px rgba(10,124,255,0.3);
+}
+.sc-run:hover { background: var(--blue-dark); }
+.sc-run:active { transform: scale(.97); }
+
+/* ═══ LAYOUT ═══ */
+.layout {
+  display: grid;
+  grid-template-columns: 252px 1fr;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 18px 22px 60px;
+  gap: 14px;
+}
+
+/* ═══ CARD BASE ═══ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--divide);
+  border-radius: 11px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  animation: fadeUp .45s ease both;
+}
+.card:hover { box-shadow: var(--shadow-md); }
+
+.ch {
+  padding: 10px 15px;
+  border-bottom: 1px solid var(--divide);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface);
+}
+.ch-l { display: flex; align-items: center; gap: 7px; }
+.cdot { width: 5px; height: 5px; border-radius: 50%; background: var(--blue); }
+.ctitle {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9.5px; letter-spacing: .24em; text-transform: uppercase; color: var(--ink3);
+}
+.cact {
+  font-size: 9.5px; color: var(--blue); cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif; letter-spacing: .1em; text-transform: uppercase;
+  transition: opacity .15s;
+}
+.cact:hover { opacity: .6; }
+
+.cb { padding: 13px 15px; display: flex; flex-direction: column; gap: 10px; }
+
+/* ═══ LEFT ═══ */
+.left { display: flex; flex-direction: column; gap: 11px; }
+.left .card:nth-child(1){animation-delay:.04s}
+.left .card:nth-child(2){animation-delay:.09s}
+.left .card:nth-child(3){animation-delay:.14s}
+.left .card:nth-child(4){animation-delay:.19s}
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-size: 8.5px; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink3); font-weight: 600;
+}
+.field input, .field select {
+  background: var(--surface2); border: 1px solid var(--divide-strong);
+  border-radius: 7px; padding: 7px 10px;
+  color: var(--ink); font-family: 'Barlow', sans-serif;
+  font-size: 12.5px; font-weight: 400; outline: none; width: 100%;
+  transition: border-color .15s, background .15s; -webkit-appearance: none;
+}
+.field input:focus, .field select:focus {
+  border-color: var(--blue); background: var(--surface);
+  box-shadow: 0 0 0 3px var(--blue-low);
+}
+.field input::placeholder { color: var(--ink4); }
+.field select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239a9aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  padding-right: 26px;
+}
+
+.tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.tag {
+  font-size: 11px; padding: 3px 10px; border-radius: 20px;
+  border: 1px solid var(--divide-strong); color: var(--ink3);
+  cursor: pointer; font-family: 'Barlow', sans-serif;
+  background: var(--surface2);
+  transition: all .13s; user-select: none;
+}
+.tag:hover { border-color: var(--blue-border); color: var(--ink2); }
+.tag.on {
+  background: var(--blue); border-color: var(--blue);
+  color: #fff; box-shadow: 0 1px 4px rgba(10,124,255,0.25);
+}
+
+.hist-item {
+  background: var(--surface2); border: 1px solid var(--divide);
+  border-radius: 7px; padding: 9px 12px; transition: border-color .15s;
+}
+.hist-item:hover { border-color: var(--blue-border); }
+.hi-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11.5px; letter-spacing: .04em; color: var(--ink); margin-bottom: 3px; font-weight: 600;
+}
+.hi-meta { font-size: 10.5px; color: var(--ink3); }
+
+/* ═══ RIGHT ═══ */
+.right { display: flex; flex-direction: column; gap: 12px; }
+
+/* Metrics */
+.metrics { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+
+.mc {
+  background: var(--surface);
+  border: 1px solid var(--divide);
+  border-radius: 11px; padding: 16px 17px;
+  box-shadow: var(--shadow-sm);
+  animation: fadeUp .45s ease both;
+  transition: box-shadow .2s, border-color .2s;
+  position: relative; overflow: hidden;
+}
+.mc:hover { box-shadow: var(--shadow-md); border-color: var(--blue-border); }
+.mc:nth-child(1){animation-delay:.06s}
+.mc:nth-child(2){animation-delay:.11s}
+.mc:nth-child(3){animation-delay:.16s}
+.mc:nth-child(4){animation-delay:.21s}
+
+.mc-accent {
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--blue); opacity: 0.6;
+}
+
+.mc-lbl {
+  font-size: 9px; letter-spacing: .2em; text-transform: uppercase;
+  color: var(--ink3); font-family: 'Barlow Condensed', sans-serif; margin-bottom: 9px;
+}
+.mc-val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800; font-size: 30px; line-height: 1;
+  margin-bottom: 5px; letter-spacing: -.01em; color: var(--ink);
+}
+.mc-val.blue { color: var(--blue); }
+.mc-sub {
+  font-size: 10.5px; font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: .04em; color: var(--ink3);
+}
+.mc-sub.up { color: var(--blue); }
+
+/* Main output card */
+.out-card {
+  background: var(--surface);
+  border: 1px solid var(--divide);
+  border-radius: 11px; overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  animation: fadeUp .45s ease .2s both;
+}
+.out-card:hover { box-shadow: var(--shadow-md); }
+
+.out-inner {
+  display: grid; grid-template-columns: 1fr 1px 1fr;
+}
+.divider-col { background: var(--divide); }
+
+/* Mix */
+.mix { padding: 12px 15px; display: flex; flex-direction: column; gap: 4px; }
+
+.mrow {
+  display: grid;
+  grid-template-columns: 94px 1fr 46px 68px 74px;
+  align-items: center; gap: 8px;
+  padding: 8px 11px; border-radius: 8px;
+  border: 1px solid transparent;
+  transition: all .18s; cursor: default;
+}
+.mrow:hover { background: var(--surface2); border-color: var(--divide); }
+.mrow.lead { background: var(--blue-low); border-color: var(--blue-border); }
+.mrow.lead:hover { background: var(--blue-mid); }
+
+.mn {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 12px; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--ink2);
+}
+.mrow.lead .mn { color: var(--blue-bright); }
+
+.bbar { height: 3px; border-radius: 2px; background: var(--surface3); overflow: hidden; }
+.bfill { height: 100%; border-radius: 2px; background: var(--ink4); }
+.mrow.lead .bfill { background: var(--blue); }
+
+.mpct {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 13px; color: var(--ink3); text-align: right;
+}
+.mrow.lead .mpct { color: var(--blue-bright); }
+
+.mspend {
+  font-size: 10.5px; color: var(--ink3); text-align: right;
+  font-family: 'Barlow Condensed', sans-serif; letter-spacing: .02em;
+}
+
+.pill {
+  font-size: 8.5px; font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: .1em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 4px; text-align: center; font-weight: 700;
+}
+.p-blue { background: var(--blue-mid); color: var(--blue-bright); }
+.p-mid  { background: rgba(0,0,0,0.05); color: var(--ink3); }
+.p-off  { background: rgba(0,0,0,0.04); color: var(--ink4);
+          text-decoration: line-through; }
+
+/* Rationale */
+.rat {
+  margin: 0 15px 15px;
+  background: var(--blue-low); border: 1px solid var(--blue-border);
+  border-radius: 8px; padding: 12px 14px;
+  display: flex; gap: 11px; align-items: flex-start;
+}
+.rat-ico {
+  width: 22px; height: 22px; flex-shrink: 0;
+  background: var(--blue-mid); border: 1px solid var(--blue-border);
+  border-radius: 5px; display: grid; place-items: center; margin-top: 1px;
+}
+.rat-txt { font-size: 11.5px; color: var(--ink2); line-height: 1.7; font-weight: 400; }
+.rat-txt strong { color: var(--ink); font-weight: 600; }
+
+/* Chart */
+.chart-col { padding: 16px 18px; }
+.chart-head {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+}
+.chart-ttl {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 9.5px;
+  letter-spacing: .22em; text-transform: uppercase; color: var(--ink3);
+}
+.chart-note {
+  font-size: 9px; color: var(--ink3);
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: .1em; text-transform: uppercase;
+}
+.chart-wrap { position: relative; height: 190px; }
+.chart-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px; }
+.leg-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 9px; color: var(--ink3);
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: .08em; text-transform: uppercase;
+}
+.leg-line { width: 16px; height: 2px; border-radius: 1px; }
+
+/* Scenario compare */
+.sc-wrap {
+  background: var(--surface);
+  border: 1px solid var(--divide);
+  border-radius: 11px; overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  animation: fadeUp .45s ease .28s both;
+}
+
+.sg { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; padding: 14px 15px; }
+
+.scard {
+  background: var(--surface2); border: 1px solid var(--divide);
+  border-radius: 9px; padding: 14px;
+  cursor: pointer; transition: all .2s;
+  position: relative; overflow: hidden; user-select: none;
+}
+.scard:hover { border-color: var(--blue-border); box-shadow: var(--shadow-sm); }
+.scard.active {
+  background: var(--blue-low); border-color: var(--blue-border);
+  box-shadow: 0 0 0 1px var(--blue-border);
+}
+.scard.active::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; background: var(--blue);
+}
+
+.s-tag {
+  font-size: 8.5px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ink3); font-family: 'Barlow Condensed', sans-serif; margin-bottom: 6px;
+}
+.scard.active .s-tag { color: var(--blue); }
+.s-name {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+  font-size: 14px; text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 11px; color: var(--ink);
+}
+.s-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.s-k { font-size: 10px; color: var(--ink3); font-weight: 400; }
+.s-v { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; color: var(--ink); }
+.s-v.blue { color: var(--blue); }
+.s-v.muted { color: var(--ink3); }
+.s-v.dim { color: var(--ink4); }
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--ink4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink3); }
+
+@media(max-width:900px){
+  .layout { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(2,1fr); }
+  .out-inner { grid-template-columns: 1fr; }
+  .divider-col { display: none; }
+  .sg { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="nb-mark">NB</div>
+  <div class="canvas-word">Canvas</div>
+  <div class="h-sep"></div>
+  <div>
+    <div class="h-client-name">Island Coffee</div>
+    <div class="h-client-sub">Active Campaign · Q3 2026</div>
+  </div>
+  <div class="h-right">
+    <div class="h-status">
+      <div class="h-dot"></div>
+      <span class="h-status-txt">Live Data</span>
+    </div>
+    <div class="h-pill">Channel Planning Engine</div>
+  </div>
+</header>
+
+<!-- SCENARIO BAR -->
+<div class="scbar">
+  <span class="sc-label">Scenarios</span>
+  <div class="stab active" onclick="switchTab(this)">Base Plan</div>
+  <div class="stab" onclick="switchTab(this)">Performance Push</div>
+  <div class="stab" onclick="switchTab(this)">Lean Budget</div>
+  <div class="stab-add">+ New Scenario</div>
+  <div class="scbar-right">
+    <div class="sc-btn">Export</div>
+    <div class="sc-btn">Share</div>
+    <button class="sc-run">Run Canvas →</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT -->
+  <div class="left">
+
+    <div class="card">
+      <div class="ch">
+        <div class="ch-l"><div class="cdot"></div><div class="ctitle">Campaign Brief</div></div>
+        <div class="cact">Edit</div>
+      </div>
+      <div class="cb">
+        <div class="field"><label>Advertiser</label><input type="text" value="Island Coffee" /></div>
+        <div class="field"><label>Campaign</label><input type="text" value="Everyday Ritual — Brand FY26" /></div>
+        <div class="field">
+          <label>Objective</label>
+          <select>
+            <option selected>Brand Awareness + Consideration</option>
+            <option>Direct Response</option>
+            <option>Loyalty / Retention</option>
+          </select>
+        </div>
+        <div class="field"><label>Primary Audience</label><input type="text" value="Coffee lovers, 25–45, AU/NZ" /></div>
+        <div class="field"><label>Flight</label><input type="text" value="Q3 2026 · 13 weeks" /></div>
+        <div class="field"><label>Total Budget</label><input type="text" value="$420,000" /></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <div class="ch-l"><div class="cdot"></div><div class="ctitle">Channel Pool</div></div>
+        <div class="cact">All</div>
+      </div>
+      <div class="cb">
+        <div class="tags">
+          <div class="tag on">Meta</div>
+          <div class="tag on">TikTok</div>
+          <div class="tag on">DV360</div>
+          <div class="tag on">Audio</div>
+          <div class="tag on">OOH</div>
+          <div class="tag">YouTube</div>
+          <div class="tag">Snap</div>
+          <div class="tag">BVOD</div>
+          <div class="tag">SEM</div>
+          <div class="tag">Pinterest</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <div class="ch-l"><div class="cdot"></div><div class="ctitle">Optimise For</div></div>
+      </div>
+      <div class="cb">
+        <div class="field">
+          <select>
+            <option selected>Audience Reach + Brand Recall</option>
+            <option>Cost Per Unique Reach</option>
+            <option>Consideration Lift</option>
+            <option>Low Carbon</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Risk Tolerance</label>
+          <select>
+            <option>Conservative</option>
+            <option selected>Balanced</option>
+            <option>Aggressive</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <div class="ch-l"><div class="cdot"></div><div class="ctitle">Historical Signal</div></div>
+        <div class="cact">3 campaigns</div>
+      </div>
+      <div class="cb">
+        <div class="hist-item">
+          <div class="hi-name">Island Coffee Q2 2025</div>
+          <div class="hi-meta">Meta + Audio · $310K · Reach 3.1M</div>
+        </div>
+        <div class="hist-item">
+          <div class="hi-name">Island Coffee Q4 2025</div>
+          <div class="hi-meta">Meta + OOH + TikTok · $390K · Reach 4.0M</div>
+        </div>
+        <div class="hist-item">
+          <div class="hi-name">FMCG / Beverage Benchmarks AU</div>
+          <div class="hi-meta">2024–25 · 14 comparable brands</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+
+    <!-- Metrics -->
+    <div class="metrics">
+      <div class="mc">
+        <div class="mc-accent"></div>
+        <div class="mc-lbl">Est. Total Reach</div>
+        <div class="mc-val blue">5.4M</div>
+        <div class="mc-sub up">↑ 35% vs Q4 2025</div>
+      </div>
+      <div class="mc">
+        <div class="mc-accent"></div>
+        <div class="mc-lbl">Budget Allocated</div>
+        <div class="mc-val">$420K</div>
+        <div class="mc-sub">Fully allocated · 5 channels</div>
+      </div>
+      <div class="mc">
+        <div class="mc-accent"></div>
+        <div class="mc-lbl">Audience Index</div>
+        <div class="mc-val blue">94</div>
+        <div class="mc-sub up">Excellent · coffee 25–45 AU/NZ</div>
+      </div>
+      <div class="mc">
+        <div class="mc-accent"></div>
+        <div class="mc-lbl">Est. Brand Recall Lift</div>
+        <div class="mc-val blue">+8.2%</div>
+        <div class="mc-sub">vs category avg +4.1%</div>
+      </div>
+    </div>
+
+    <!-- Output card -->
+    <div class="out-card">
+      <div class="ch">
+        <div class="ch-l"><div class="cdot"></div><div class="ctitle">Channel Mix — Base Plan</div></div>
+        <div style="font-size:9px;color:var(--ink3);font-family:'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;">Ranked by audience fit</div>
+      </div>
+
+      <div class="out-inner">
+
+        <!-- Mix list -->
+        <div>
+          <div class="mix">
+
+            <div class="mrow lead">
+              <div class="mn">Meta</div>
+              <div class="bbar"><div class="bfill" style="width:34%"></div></div>
+              <div class="mpct">34%</div>
+              <div class="mspend">$142.8K</div>
+              <div class="pill p-blue">↑ Primary</div>
+            </div>
+
+            <div class="mrow lead">
+              <div class="mn">TikTok</div>
+              <div class="bbar"><div class="bfill" style="width:22%"></div></div>
+              <div class="mpct">22%</div>
+              <div class="mspend">$92.4K</div>
+              <div class="pill p-blue">↑ Strong</div>
+            </div>
+
+            <div class="mrow">
+              <div class="mn">OOH</div>
+              <div class="bbar"><div class="bfill" style="width:18%"></div></div>
+              <div class="mpct">18%</div>
+              <div class="mspend">$75.6K</div>
+              <div class="pill p-mid">→ Contextual</div>
+            </div>
+
+            <div class="mrow">
+              <div class="mn">Audio</div>
+              <div class="bbar"><div class="bfill" style="width:14%"></div></div>
+              <div class="mpct">14%</div>
+              <div class="mspend">$58.8K</div>
+              <div class="pill p-mid">→ Reach ext.</div>
+            </div>
+
+            <div class="mrow">
+              <div class="mn">DV360</div>
+              <div class="bbar"><div class="bfill" style="width:12%"></div></div>
+              <div class="mpct">12%</div>
+              <div class="mspend">$50.4K</div>
+              <div class="pill p-mid">→ Retarget</div>
+            </div>
+
+            <div class="mrow" style="opacity:.3;pointer-events:none;">
+              <div class="mn" style="text-decoration:line-through;">YouTube</div>
+              <div class="bbar"><div class="bfill" style="width:0%"></div></div>
+              <div class="mpct" style="color:var(--ink4)">—</div>
+              <div class="mspend" style="color:var(--ink4)">Excl.</div>
+              <div class="pill p-off">Deprioritised</div>
+            </div>
+
+          </div>
+
+          <div class="rat">
+            <div class="rat-ico">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#0a7cff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div class="rat-txt">
+              <strong>Canvas reasoning:</strong> For an everyday ritual brand, the strongest play is <strong>high-frequency social + physical environment</strong>. Meta and TikTok deliver peak reach and purchase-intent signals for 25–45 coffee drinkers, indexed against 14 FMCG benchmarks. OOH activates near consumption moments — cafés, transit, convenience. Audio extends reach in morning routines, the highest-index daypart for this category. YouTube excluded: cost-per-unique-reach is 2.3× higher than Meta for this segment.
+            </div>
+          </div>
+        </div>
+
+        <div class="divider-col"></div>
+
+        <!-- Chart -->
+        <div class="chart-col">
+          <div class="chart-head">
+            <span class="chart-ttl">Diminishing Returns — Budget vs Reach</span>
+            <span class="chart-note">● Optimal point</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="drChart"></canvas>
+          </div>
+          <div class="chart-legend">
+            <div class="leg-item"><div class="leg-line" style="background:#0a7cff;"></div>Meta</div>
+            <div class="leg-item"><div class="leg-line" style="background:#6366f1;"></div>TikTok</div>
+            <div class="leg-item"><div class="leg-line" style="background:#9a9aaa;"></div>OOH</div>
+            <div class="leg-item"><div class="leg-line" style="background:#c8c8d4;"></div>Audio</div>
+            <div class="leg-item"><div class="leg-line" style="background:#c8c8d4;stroke-dasharray:4;"></div>DV360</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Scenario compare -->
+    <div class="sc-wrap">
+      <div class="ch">
+        <div class="ch-l"><div class="cdot"></div><div class="ctitle">Scenario Comparison</div></div>
+        <div style="font-size:9px;color:var(--ink3);font-family:'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;">Click to activate</div>
+      </div>
+      <div class="sg">
+
+        <div class="scard active" onclick="activateSc(this)">
+          <div class="s-tag">Active — Scenario A</div>
+          <div class="s-name">Base Plan</div>
+          <div class="s-row"><span class="s-k">Budget</span><span class="s-v">$420K</span></div>
+          <div class="s-row"><span class="s-k">Channels</span><span class="s-v blue">5</span></div>
+          <div class="s-row"><span class="s-k">Est. Reach</span><span class="s-v blue">5.4M</span></div>
+          <div class="s-row"><span class="s-k">Audience Index</span><span class="s-v blue">94</span></div>
+          <div class="s-row"><span class="s-k">Brand Recall Lift</span><span class="s-v blue">+8.2%</span></div>
+        </div>
+
+        <div class="scard" onclick="activateSc(this)">
+          <div class="s-tag">Scenario B</div>
+          <div class="s-name">Performance Push</div>
+          <div class="s-row"><span class="s-k">Budget</span><span class="s-v">$420K</span></div>
+          <div class="s-row"><span class="s-k">Channels</span><span class="s-v">3</span></div>
+          <div class="s-row"><span class="s-k">Est. Reach</span><span class="s-v muted">4.1M</span></div>
+          <div class="s-row"><span class="s-k">Audience Index</span><span class="s-v muted">87</span></div>
+          <div class="s-row"><span class="s-k">Brand Recall Lift</span><span class="s-v muted">+5.8%</span></div>
+        </div>
+
+        <div class="scard" onclick="activateSc(this)">
+          <div class="s-tag">Scenario C</div>
+          <div class="s-name">Lean Budget</div>
+          <div class="s-row"><span class="s-k">Budget</span><span class="s-v dim">$280K</span></div>
+          <div class="s-row"><span class="s-k">Channels</span><span class="s-v dim">3</span></div>
+          <div class="s-row"><span class="s-k">Est. Reach</span><span class="s-v dim">3.2M</span></div>
+          <div class="s-row"><span class="s-k">Audience Index</span><span class="s-v dim">81</span></div>
+          <div class="s-row"><span class="s-k">Brand Recall Lift</span><span class="s-v dim">+3.1%</span></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+function dr(ceiling, k, n) {
+  return Array.from({length:n}, (_,i) => {
+    const x = i/(n-1);
+    return +(ceiling*(1-Math.exp(-k*x))).toFixed(3);
+  });
+}
+
+const N = 26;
+const labels = Array.from({length:N}, (_,i) => {
+  const v = Math.round((i/(N-1))*420);
+  return i%5===0 ? '$'+v+'K' : '';
+});
+
+const series = [
+  { label:'Meta',   data:dr(2.9,4.6,N), color:'#0a7cff',               opt:16, w:2.5, dash:[] },
+  { label:'TikTok', data:dr(2.1,3.9,N), color:'#6366f1',               opt:15, w:2,   dash:[] },
+  { label:'OOH',    data:dr(1.6,3.1,N), color:'rgba(90,90,110,0.6)',    opt:null, w:1.5, dash:[] },
+  { label:'Audio',  data:dr(1.2,2.5,N), color:'rgba(140,140,160,0.5)',  opt:null, w:1.5, dash:[4,3] },
+  { label:'DV360',  data:dr(0.9,2.1,N), color:'rgba(180,180,200,0.45)', opt:null, w:1.5, dash:[2,3] },
+];
+
+const ctx = document.getElementById('drChart').getContext('2d');
+new Chart(ctx, {
+  type:'line',
+  data:{
+    labels,
+    datasets: series.map(s=>({
+      label: s.label,
+      data: s.data,
+      borderColor: s.color,
+      borderWidth: s.w,
+      borderDash: s.dash,
+      tension: 0.42,
+      fill: false,
+      pointRadius: s.data.map((_,i)=>(s.opt&&i===s.opt)?5:0),
+      pointHoverRadius: 4,
+      pointBackgroundColor: s.color,
+      pointBorderColor: '#ffffff',
+      pointBorderWidth: 2,
+    }))
+  },
+  options:{
+    responsive:true,
+    maintainAspectRatio:false,
+    interaction:{ mode:'index', intersect:false },
+    plugins:{
+      legend:{ display:false },
+      tooltip:{
+        backgroundColor:'#ffffff',
+        borderColor:'rgba(0,0,0,0.1)',
+        borderWidth:1,
+        titleColor:'#9a9aaa',
+        bodyColor:'#0a0a0f',
+        padding:10,
+        boxShadow:'0 4px 12px rgba(0,0,0,0.1)',
+        titleFont:{ family:'Barlow Condensed', size:9, weight:'400' },
+        bodyFont:{ family:'Barlow Condensed', size:11, weight:'700' },
+        callbacks:{
+          label: c => `  ${c.dataset.label}  ${c.parsed.y.toFixed(2)}M reach`
+        }
+      }
+    },
+    scales:{
+      x:{
+        grid:{ color:'rgba(0,0,0,0.04)', drawBorder:false },
+        ticks:{ color:'#c8c8d4', font:{ family:'Barlow Condensed', size:9 }, maxRotation:0 },
+        border:{ display:false }
+      },
+      y:{
+        grid:{ color:'rgba(0,0,0,0.04)', drawBorder:false },
+        ticks:{ color:'#c8c8d4', font:{ family:'Barlow Condensed', size:9 }, callback:v=>v.toFixed(1)+'M' },
+        border:{ display:false },
+        title:{ display:true, text:'Estimated Reach', color:'#c8c8d4', font:{ family:'Barlow Condensed', size:9 } }
+      }
+    }
+  }
+});
+
+function switchTab(el){
+  document.querySelectorAll('.stab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function activateSc(el){
+  document.querySelectorAll('.scard').forEach(c=>{
+    c.classList.remove('active');
+    const t = c.querySelector('.s-tag');
+    if(t) t.textContent = t.textContent.replace(/^Active — /,'');
+  });
+  el.classList.add('active');
+  const t = el.querySelector('.s-tag');
+  if(t && !t.textContent.startsWith('Active')) t.textContent = 'Active — ' + t.textContent;
+}
+
+document.querySelectorAll('.tag').forEach(t=>{
+  t.addEventListener('click',()=>t.classList.toggle('on'));
+});
+</script>
+</body>
+</html>
